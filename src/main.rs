@@ -1,5 +1,5 @@
 mod game;
-use game::Game;
+use game::{Game, Status};
 use std::io::{self, Write};
 
 fn main() {
@@ -23,9 +23,16 @@ fn main() {
             }
         }
 
-        if game.is_game_over() {
-            println!("Game Over");
-            break;
+        match game.status() {
+            Status::Checkmate(color)=> {
+                println!("Game Over: {:?} wins!", color);
+                break;
+            }
+            Status::Stalemate => {
+                println!("Stalemate");
+                break;
+            }
+            Status::Ongoing => ()
         }
     }
 }

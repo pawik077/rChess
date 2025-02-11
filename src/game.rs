@@ -1,6 +1,12 @@
 use chess::{Board, BoardStatus, ChessMove, Color};
 use std::str::FromStr;
 
+pub enum Status {
+   Ongoing,
+   Checkmate(Color),
+   Stalemate 
+}
+
 pub struct Game {
     board: Board,
     turn: Color,
@@ -69,7 +75,12 @@ impl Game {
             Err(_) => Err("Invalid input format!".into()),
         }
     }
-    pub fn is_game_over(&self) -> bool {
-        self.board.status() == BoardStatus::Checkmate
+
+    pub fn status(&self) -> Status { 
+        match self.board.status() {
+            BoardStatus::Ongoing => Status::Ongoing,
+            BoardStatus::Checkmate => Status::Checkmate(!self.turn),
+            BoardStatus::Stalemate => Status::Stalemate
+        }
     }
 }
