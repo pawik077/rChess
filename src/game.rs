@@ -10,6 +10,7 @@ pub enum Status {
 pub struct Game {
     board: Board,
     turn: Color,
+    history: Vec<(Board, Color)>
 }
 
 impl Game {
@@ -17,6 +18,7 @@ impl Game {
         Self {
             board: Board::default(),
             turn: Color::White,
+            history: Vec::new()
         }
     }
 
@@ -65,6 +67,7 @@ impl Game {
         match ChessMove::from_str(input) {
             Ok(chess_move) => {
                 if self.board.legal(chess_move) {
+                    self.history.push((self.board, self.turn));
                     self.board = self.board.make_move_new(chess_move);
                     self.turn = !self.turn;
                     Ok(())
@@ -73,6 +76,16 @@ impl Game {
                 }
             }
             Err(_) => Err("Invalid input format!".into()),
+        }
+    }
+
+    pub fn undo(&mut self) -> Result<(), String> {
+        if let Some((prev_board, prev_turn)) = self.history.pop() {
+            self.board = prev_board;
+            self.turn = prev_turn;
+            Ok(())
+        } else {
+            Err("No moves to undo!".into())
         }
     }
 

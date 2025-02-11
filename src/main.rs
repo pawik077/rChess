@@ -15,6 +15,12 @@ fn main() {
 
         match input {
             "quit" => break,
+            "undo" => {
+                if let Err(e) = game.undo() {
+                    println!("{}", e);
+                    continue;
+                }
+            }
             _ => {
                 if let Err(e) = game.make_move(input) {
                     println!("{}", e);
