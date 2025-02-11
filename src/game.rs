@@ -63,19 +63,31 @@ impl Game {
         println!("{}", board_str);
     }
 
-    pub fn make_move(&mut self, input: &str) -> Result<(), String> {
-        match ChessMove::from_str(input) {
-            Ok(chess_move) => {
-                if self.board.legal(chess_move) {
+    pub fn make_move(&mut self, input: &str, uci: bool) -> Result<(), String> {
+        if uci {
+            match ChessMove::from_str(input) {
+                Ok(chess_move) => {
+                    if self.board.legal(chess_move) {
+                        self.history.push((self.board, self.turn));
+                        self.board = self.board.make_move_new(chess_move);
+                        self.turn = !self.turn;
+                        Ok(())
+                    } else {
+                        Err("Illegal move!".into())
+                    }
+                }
+                Err(_) => Err("Invalid input format!".into()),
+            }
+        } else {
+            match ChessMove::from_san(&self.board, input) {
+                Ok(chess_move) => {
                     self.history.push((self.board, self.turn));
                     self.board = self.board.make_move_new(chess_move);
                     self.turn = !self.turn;
                     Ok(())
-                } else {
-                    Err("Illegal move!".into())
                 }
+                Err(_) => Err("Invalid input!".into())
             }
-            Err(_) => Err("Invalid input format!".into()),
         }
     }
 

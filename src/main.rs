@@ -22,7 +22,7 @@ fn main() {
                 }
             }
             _ => {
-                if let Err(e) = game.make_move(input) {
+                if let Err(e) = game.make_move(input, false) {
                     println!("{}", e);
                     continue;
                 }
