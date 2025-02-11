@@ -23,11 +23,6 @@ fn main() {
             }
         }
 
-        if let Err(e) = game.make_move(input) {
-            println!("{}", e);
-            continue;
-        }
-
         if game.is_game_over() {
             println!("Game Over");
             break;
