@@ -154,6 +154,7 @@ impl Game {
         if let Some((prev_board, prev_turn)) = self.history.pop() {
             self.board = prev_board;
             self.turn = prev_turn;
+            self.moves.pop();
             Ok(())
         } else {
             Err("No moves to undo!".into())
