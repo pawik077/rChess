@@ -20,7 +20,8 @@ fn main() {
                     println!("{}", e);
                     continue;
                 }
-            }
+            },
+            "print" => game.print_move_history(),
             _ => {
                 if let Err(e) = game.make_move(input, false) {
                     println!("{}", e);

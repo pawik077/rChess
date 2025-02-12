@@ -10,7 +10,8 @@ pub enum Status {
 pub struct Game {
     board: Board,
     turn: Color,
-    history: Vec<(Board, Color)>
+    history: Vec<(Board, Color)>,
+    moves: Vec<ChessMove>,
 }
 
 impl Game {
@@ -18,7 +19,8 @@ impl Game {
         Self {
             board: Board::default(),
             turn: Color::White,
-            history: Vec::new()
+            history: Vec::new(),
+            moves: Vec::new(),
         }
     }
 
@@ -71,6 +73,7 @@ impl Game {
                         self.history.push((self.board, self.turn));
                         self.board = self.board.make_move_new(chess_move);
                         self.turn = !self.turn;
+                        self.moves.push(chess_move);
                         Ok(())
                     } else {
                         Err("Illegal move!".into())
@@ -84,6 +87,7 @@ impl Game {
                     self.history.push((self.board, self.turn));
                     self.board = self.board.make_move_new(chess_move);
                     self.turn = !self.turn;
+                    self.moves.push(chess_move);
                     Ok(())
                 }
                 Err(_) => Err("Invalid input!".into())
@@ -99,6 +103,18 @@ impl Game {
         } else {
             Err("No moves to undo!".into())
         }
+    }
+
+    pub fn print_move_history(&self) {
+        println!("Move history:");
+        for (i, chunk) in self.moves.chunks(2).enumerate() {
+            let white_move = chunk.get(0).unwrap();
+            match chunk.get(1) {
+                Some(black_move) => println!("{}. {} {}", i + 1, white_move, black_move),
+                None => println!("{}. {}", i + 1, white_move),
+            }
+        }
+        println!();
     }
 
     pub fn status(&self) -> Status { 
