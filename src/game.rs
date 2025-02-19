@@ -267,7 +267,7 @@ impl Game {
     pub fn get_ai_move(&self) -> Result<ChessMove, String> {
         let ai_color = match self.game_mode {
             GameMode::SinglePlayer(player_color) => !player_color,
-            GameMode::TwoPlayer => panic!() // TODO: implement a safeguard so that nobody runs this function in two player mode
+            GameMode::TwoPlayer => return Err("AI can only be used in single player mode".into())
         };
         let (_eval, best_move) = minimax(&self.board, self.recursion_depth.unwrap(), true, ai_color, i32::MIN, i32::MAX);
         match best_move {
