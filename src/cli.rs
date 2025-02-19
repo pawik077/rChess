@@ -1,4 +1,5 @@
 use chess::Color;
+use rand::random_bool;
 use super::game::{Game, Status};
 use std::io::{self, Write};
 
@@ -89,9 +90,10 @@ fn single_player() {
     let player_color = match input.as_str() {
         "white" => Color::White,
         "black" => Color::Black,
-        "random" => unimplemented!(),
+        "random" => if random_bool(0.5) { Color::White } else { Color::Black },
         _ => unreachable!(),
     };
+    println!("You're playing as {:?}", player_color);
     let mut game = Game::new_single(player_color, 7);
 
     loop {
