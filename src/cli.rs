@@ -92,7 +92,7 @@ fn single_player() {
         "random" => unimplemented!(),
         _ => unreachable!(),
     };
-    let mut game = Game::new_single(player_color, 3);
+    let mut game = Game::new_single(player_color, 7);
 
     loop {
         game.display_board();
