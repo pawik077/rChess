@@ -1,4 +1,4 @@
-use super::game::{Game, Status};
+use super::game::{Game, Status, GameMode};
 use std::io::{self, Write};
 
 pub fn intro() {
@@ -28,7 +28,7 @@ pub fn intro() {
 }
 
 fn two_player() {
-    let mut game = Game::new();
+    let mut game = Game::new(GameMode::TwoPlayer);
     loop {
         game.display_board();
         print!("Enter move: ");
@@ -48,7 +48,7 @@ fn two_player() {
             },
             "print" => game.print_move_history(),
             _ => {
-                if let Err(e) = game.make_move(input, false) {
+                if let Err(e) = game.make_move_from_str(input, false) {
                     println!("{}", e);
                     continue;
                 }

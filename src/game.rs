@@ -8,12 +8,19 @@ pub enum Status {
    Stalemate 
 }
 
+/// Represents the game mode.
+pub enum GameMode {
+    TwoPlayer,
+    // SinglePlayer
+}
+
 /// Represents a chess game state.
 /// 
 /// Holds the current board state, current turn and move/board history.
 pub struct Game {
     board: Board,
     turn: Color,
+    game_mode: GameMode,
     history: Vec<(Board, Color)>,
     moves: Vec<ChessMove>,
 }
@@ -27,10 +34,11 @@ impl Game {
     /// let game = Game::new();
     /// assert_eq!(game.turn, Color::White);
     /// ```
-    pub fn new() -> Self {
+    pub fn new(game_mode: GameMode) -> Self {
         Self {
             board: Board::default(),
             turn: Color::White,
+            game_mode,
             history: Vec::new(),
             moves: Vec::new(),
         }
@@ -89,12 +97,72 @@ impl Game {
         println!("{}", board_str);
     }
 
-    /// Attempts to make a move from the given inputstring.
+    /// Attempts to generate a ChessMove from the given inputstring.
     /// 
     /// Depending on the `uci` flag, the function expects the input either
-    /// in UCI format or in Standard Algebraic Notation (SAN). If the move
-    /// is valid and legal it is applied to the game state. Otherwise an error 
-    /// message is returned.
+    /// in UCI format or in Standard Algebraic Notation (SAN).
+    /// 
+    /// # Arguments
+    /// 
+    /// * `input` - A &str representing the move
+    /// * `uci` - A bool indicating whether the input is in UCI format
+    /// 
+    /// # Returns
+    /// 
+    /// * `Ok(ChessMove)` - If the input is valid and the move is legal
+    /// * `Err(String)` - If the input is invalid or the move is illegal
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// let game = Game::new(GameMode::TwoPlayer);
+    /// assert!(game.parse_move("e2e4", true).is_ok());
+    /// assert!(game.parse_move("e4", false).is_ok());
+    /// ```
+    fn parse_move(&self, input: &str, uci: bool) -> Result<ChessMove, String>{
+        if uci {
+            match ChessMove::from_str(input) {
+                Ok(mv) => {
+                    if self.board.legal(mv) {
+                        Ok(mv)
+                    } else {
+                        Err("Illegal move!".into())
+                    }
+                }
+                Err(_) => Err("Invalid input format!".into())
+            }
+        } else {
+            match ChessMove::from_san(&self.board, input) {
+                Ok(mv) => Ok(mv),
+                Err(_) => Err("Invalid input!".into())
+            }
+        }
+    }
+
+    /// Makes a move on the board.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `mv` - a ChessMove instance
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// let mut game = Game::new(GameMode::TwoPlayer);
+    /// let mv = parse_move("e2e4", true).unwrap();
+    /// game.make_move(mv);
+    /// ```
+    pub fn make_move(&mut self, mv: ChessMove) {
+        self.history.push((self.board, self.turn));
+        self.board = self.board.make_move_new(mv);
+        self.turn = !self.turn;
+        self.moves.push(mv);
+    }
+
+    /// Attempts to make a move from the given inputstring.
+    /// Parses the input using `self.parse_move()` method.
+    /// If it succeeds, makes the move using `self.make_move()`.
+    /// Otherwise, returns an error.
     /// 
     /// # Arguments
     /// 
@@ -111,37 +179,14 @@ impl Game {
     /// 
     /// ```
     /// // Assuming the game starts at the standard position:
-    /// let mut game = Game::new();
+    /// let mut game = Game::new(GameMode::TwoPlayer);
     /// // This should succeed (for UCI input)
-    /// assert!(game.make_move("e2e4", true).is_ok());
+    /// assert!(game.make_move_from_str("e2e4", true).is_ok());
     /// ```
-    pub fn make_move(&mut self, input: &str, uci: bool) -> Result<(), String> {
-        if uci {
-            match ChessMove::from_str(input) {
-                Ok(chess_move) => {
-                    if self.board.legal(chess_move) {
-                        self.history.push((self.board, self.turn));
-                        self.board = self.board.make_move_new(chess_move);
-                        self.turn = !self.turn;
-                        self.moves.push(chess_move);
-                        Ok(())
-                    } else {
-                        Err("Illegal move!".into())
-                    }
-                }
-                Err(_) => Err("Invalid input format!".into()),
-            }
-        } else {
-            match ChessMove::from_san(&self.board, input) {
-                Ok(chess_move) => {
-                    self.history.push((self.board, self.turn));
-                    self.board = self.board.make_move_new(chess_move);
-                    self.turn = !self.turn;
-                    self.moves.push(chess_move);
-                    Ok(())
-                }
-                Err(_) => Err("Invalid input!".into())
-            }
+    pub fn make_move_from_str(&mut self, input: &str, uci: bool) -> Result<(), String>{
+        match self.parse_move(input, uci) {
+            Ok(mv) => Ok(self.make_move(mv)),
+            Err(e) => Err(e)
         }
     }
 
