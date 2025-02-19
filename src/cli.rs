@@ -1,6 +1,5 @@
 use chess::Color;
 use super::game::{Game, Status};
-use super::ai::minimax;
 use std::io::{self, Write};
 
 pub fn intro() {
@@ -93,8 +92,7 @@ fn single_player() {
         "random" => unimplemented!(),
         _ => unreachable!(),
     };
-    let ai_color = !player_color;
-    let mut game = Game::new_single(player_color, ai_color, 3);
+    let mut game = Game::new_single(player_color, 3);
 
     loop {
         game.display_board();
@@ -127,7 +125,6 @@ fn single_player() {
                 Ok(mv) => game.make_move(mv),
                 Err(e) => println!("{}", e)
             }
-            // unimplemented!()
         }
         match game.status() {
             Status::Checkmate(color)=> {
