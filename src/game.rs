@@ -1,5 +1,6 @@
 use chess::{Board, BoardStatus, ChessMove, Color};
-use std::str::FromStr;
+use std::{i32, str::FromStr};
+use super::ai::minimax;
 
 /// Represents the status of the game.
 pub enum Status {
@@ -11,7 +12,7 @@ pub enum Status {
 /// Represents the game mode.
 pub enum GameMode {
     TwoPlayer,
-    // SinglePlayer
+    SinglePlayer
 }
 
 /// Represents a chess game state.
@@ -21,6 +22,9 @@ pub struct Game {
     board: Board,
     turn: Color,
     game_mode: GameMode,
+    player_color: Option<Color>,
+    ai_color: Option<Color>,
+    recursion_depth: Option<u32>,
     history: Vec<(Board, Color)>,
     moves: Vec<ChessMove>,
 }
@@ -34,11 +38,27 @@ impl Game {
     /// let game = Game::new();
     /// assert_eq!(game.turn, Color::White);
     /// ```
-    pub fn new(game_mode: GameMode) -> Self {
+    pub fn new_multi() -> Self {
         Self {
             board: Board::default(),
             turn: Color::White,
-            game_mode,
+            game_mode: GameMode::TwoPlayer,
+            player_color: None,
+            ai_color: None,
+            recursion_depth: None,
+            history: Vec::new(),
+            moves: Vec::new(),
+        }
+    }
+
+    pub fn new_single(player_color: Color, ai_color: Color, recursion_depth: u32) -> Self {
+        Self {
+            board: Board::default(),
+            turn: Color::White,
+            game_mode: GameMode::SinglePlayer,
+            player_color: Some(player_color),
+            ai_color: Some(ai_color),
+            recursion_depth: Some(recursion_depth),
             history: Vec::new(),
             moves: Vec::new(),
         }
@@ -245,6 +265,16 @@ impl Game {
             BoardStatus::Ongoing => Status::Ongoing,
             BoardStatus::Checkmate => Status::Checkmate(!self.turn),
             BoardStatus::Stalemate => Status::Stalemate
+        }
+    }
+    pub fn turn(&self) -> Color {
+        self.turn
+    }
+    pub fn get_ai_move(&self) -> Result<ChessMove, String> {
+        let (_eval, best_move) = minimax(&self.board, self.recursion_depth.unwrap(), true, self.ai_color.unwrap(), i32::MIN, i32::MAX);
+        match best_move {
+            Some(m) => Ok(m),
+            None => Err("No legal moves for AI available".into())
         }
     }
 }
