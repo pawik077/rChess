@@ -2,13 +2,13 @@
 use super::game::*;
 
 #[test]
-fn is_ongoing() {
+fn is_status_ongoing() {
     let game = Game::new_multi();
     assert_eq!(game.status(), Status::Ongoing)
 }
 
 #[test]
-fn is_checkmate_for_black() {
+fn is_status_checkmate_for_black() {
     let mut game = Game::new_multi();
     // Fool's mate
     game.make_move_from_str("f3", false).unwrap();
@@ -19,7 +19,7 @@ fn is_checkmate_for_black() {
 }
 
 #[test]
-fn is_checkmate_for_white() {
+fn is_status_checkmate_for_white() {
     let mut game = Game::new_multi();
     // Reverse Fool's mate
     game.make_move_from_str("e4", false).unwrap();
@@ -31,7 +31,7 @@ fn is_checkmate_for_white() {
 }
 
 #[test]
-fn is_stalemate() {
+fn is_status_stalemate() {
     let mut game = Game::new_multi();
     // Sam Loyd's stalemate in 10 moves
     game.make_move_from_str("e3", false).unwrap();
