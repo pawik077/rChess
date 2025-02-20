@@ -3,6 +3,7 @@ use std::{i32, str::FromStr};
 use super::ai::minimax;
 
 /// Represents the status of the game.
+#[derive(PartialEq, Debug)]
 pub enum Status {
    Ongoing,
    Checkmate(Color),
