@@ -1,6 +1,6 @@
 use super::ai::minimax;
 use chess::{Board, BoardStatus, ChessMove, Color};
-use std::{i32, str::FromStr};
+use std::str::FromStr;
 
 /// Represents the status of the game.
 #[derive(PartialEq, Debug)]
@@ -160,7 +160,10 @@ impl Game {
     /// ```
     pub fn make_move_from_str(&mut self, input: &str, uci: bool) -> Result<(), String> {
         match self.parse_move(input, uci) {
-            Ok(mv) => Ok(self.make_move(mv)),
+            Ok(mv) => {
+                self.make_move(mv);
+                Ok(())
+            }
             Err(e) => Err(e),
         }
     }

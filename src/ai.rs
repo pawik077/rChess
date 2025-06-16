@@ -1,4 +1,4 @@
-use chess::{Board, ChessMove, MoveGen, BoardStatus, Color, Piece, ALL_SQUARES};
+use chess::{Board, BoardStatus, ChessMove, Color, MoveGen, Piece, ALL_SQUARES};
 
 pub fn evaluate(board: &Board, perspective: Color) -> i32 {
     let mut score = 0;
@@ -31,15 +31,22 @@ pub fn minimax(
     mut beta: i32,
 ) -> (i32, Option<ChessMove>) {
     if depth == 0 || board.status() != BoardStatus::Ongoing {
-        return (evaluate(&board, perspective), None);
+        return (evaluate(board, perspective), None);
     }
 
     let mut best_move = None;
-    let mut best_eval = if maximizing {i32::MIN} else {i32::MAX};
+    let mut best_eval = if maximizing { i32::MIN } else { i32::MAX };
 
-    for m in MoveGen::new_legal(&board) {
+    for m in MoveGen::new_legal(board) {
         let new_board = board.make_move_new(m);
-        let (eval, _) = minimax(&new_board,  depth-1, ! maximizing, !perspective, alpha, beta);
+        let (eval, _) = minimax(
+            &new_board,
+            depth - 1,
+            !maximizing,
+            !perspective,
+            alpha,
+            beta,
+        );
         if maximizing {
             if eval > best_eval {
                 best_eval = eval;
@@ -53,7 +60,10 @@ pub fn minimax(
             }
             beta = beta.min(eval);
         }
-        if beta <= alpha { break; }
+        if beta <= alpha {
+            break;
+        }
     }
     (best_eval, best_move)
 }
+
