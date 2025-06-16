@@ -262,6 +262,31 @@ impl Game {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parse_move_valid_uci() {
+        let game = Game::new_multi();
+        assert!(game.parse_move("e2e4", true).is_ok());
+    }
+
+    #[test]
+    fn parse_move_valid_san() {
+        let game = Game::new_multi();
+        assert!(game.parse_move("e4", false).is_ok());
+    }
+
+    #[test]
+    fn illegal_move_rejected() {
+        let game = Game::new_multi();
+        assert!(game.parse_move("e2e5", true).is_err());
+    }
+
+    #[test]
+    fn input_format_invalid() {
+        let game = Game::new_multi();
+        assert!(game.parse_move("invalid", true).is_err());
+    }
+
     #[test]
     fn is_status_ongoing() {
         let game = Game::new_multi();
@@ -315,5 +340,84 @@ mod tests {
         game.make_move_from_str("Kg6", false).unwrap();
         game.make_move_from_str("Qe6", false).unwrap();
         assert_eq!(game.status(), Status::Stalemate);
+    }
+
+    #[test]
+    fn en_passant_move() {
+        let mut game = Game::new_multi();
+        game.make_move_from_str("e4", false).unwrap();
+        game.make_move_from_str("c6", false).unwrap();
+        game.make_move_from_str("e5", false).unwrap();
+        game.make_move_from_str("d5", false).unwrap();
+        game.make_move_from_str("d6", false).unwrap();
+        assert!(
+            game.board().piece_on(chess::Square::D6) == Some(chess::Piece::Pawn)
+                && game.board().color_on(chess::Square::D6) == Some(chess::Color::White)
+                && Option::is_none(&game.board().piece_on(chess::Square::D5))
+                && game.status() == Status::Ongoing
+        );
+    }
+
+    #[test]
+    fn castling_move() {
+        let mut game = Game::new_multi();
+        game.make_move_from_str("e4", false).unwrap();
+        game.make_move_from_str("e5", false).unwrap();
+        game.make_move_from_str("Nf3", false).unwrap();
+        game.make_move_from_str("Nc6", false).unwrap();
+        game.make_move_from_str("Bc4", false).unwrap();
+        game.make_move_from_str("Nf6", false).unwrap();
+        game.make_move_from_str("O-O", false).unwrap(); // White castles kingside
+        assert!(
+            game.board().piece_on(chess::Square::G1) == Some(chess::Piece::King)
+                && game.board().piece_on(chess::Square::F1) == Some(chess::Piece::Rook)
+                && game.board().color_on(chess::Square::G1) == Some(chess::Color::White)
+                && game.board().color_on(chess::Square::F1) == Some(chess::Color::White)
+                && game.status() == Status::Ongoing
+        )
+    }
+
+    #[test]
+    fn castling_move_illegal() {
+        let mut game = Game::new_multi();
+        game.make_move_from_str("e4", false).unwrap();
+        game.make_move_from_str("e5", false).unwrap();
+        game.make_move_from_str("f3", false).unwrap();
+        game.make_move_from_str("Nf6", false).unwrap();
+        game.make_move_from_str("Bb5", false).unwrap();
+        game.make_move_from_str("Bc5", false).unwrap();
+        game.make_move_from_str("Ne2", false).unwrap();
+        game.make_move_from_str("Nxe4", false).unwrap();
+        assert!(game.make_move_from_str("O-O", false).is_err());
+    }
+
+    #[test]
+    fn promotion_move() {
+        let mut game = Game::new_multi();
+        game.make_move_from_str("c4", false).unwrap();
+        game.make_move_from_str("Nf6", false).unwrap();
+        game.make_move_from_str("c5", false).unwrap();
+        game.make_move_from_str("Ng8", false).unwrap();
+        game.make_move_from_str("c6", false).unwrap();
+        game.make_move_from_str("Nf6", false).unwrap();
+        game.make_move_from_str("cxb7", false).unwrap();
+        game.make_move_from_str("Ng8", false).unwrap();
+        game.make_move_from_str("bxa8Q", false).unwrap(); // White promotes the pawn to a queen
+        assert!(
+            game.board().piece_on(chess::Square::A8) == Some(chess::Piece::Queen)
+                && game.board().color_on(chess::Square::A8) == Some(chess::Color::White)
+                && game.status() == Status::Ongoing
+        );
+    }
+
+    #[test]
+    fn undo_restores_state() {
+        let mut game = Game::new_multi();
+        game.make_move_from_str("e4", false).unwrap();
+        let previous_board = *game.board();
+        let previous_turn = game.turn();
+        game.make_move_from_str("e5", false).unwrap();
+        game.undo().unwrap();
+        assert!(game.board() == &previous_board && game.turn() == previous_turn);
     }
 }
