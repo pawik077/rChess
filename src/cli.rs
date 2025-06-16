@@ -1,4 +1,4 @@
-use super::game::{Game, Status};
+use crate::game::{Game, Status};
 use chess::{Color, Piece};
 use rand::random_bool;
 use std::io::{self, Write};

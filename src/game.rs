@@ -1,4 +1,4 @@
-use super::ai::minimax;
+use crate::ai::minimax;
 use chess::{Board, BoardStatus, ChessMove, Color};
 use std::str::FromStr;
 
